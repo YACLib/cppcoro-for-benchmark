@@ -167,12 +167,17 @@ target_include_directories(cppcoro PUBLIC
 	$<INSTALL_INTERFACE:include>)
 
 target_compile_definitions(cppcoro PUBLIC ${compile_definition})
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+  list(APPEND compile_options "-fcoroutines")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+  if (MSVC_VERSION GREATER 1928)
+    list(APPEND compile_options "/await:strict")
+  else ()
+    list(APPEND compile_options "/await")
+  endif ()
+endif ()
+
 target_compile_options(cppcoro PUBLIC ${compile_options})
+target_link_libraries(cppcoro PUBLIC ${libraries})
 
-find_package(Coroutines COMPONENTS Experimental Final REQUIRED)
-target_link_libraries(cppcoro PUBLIC std::coroutines ${libraries})
-
-install(TARGETS cppcoro EXPORT cppcoroTargets
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-	RUNTIME DESTINATION bin)
